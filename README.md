@@ -8,7 +8,7 @@ can jump back into work with a single keystroke.
 
 ## Features
 
-- **Menu-bar app** — Tray icon + frameless popup window, summoned via a global hotkey
+- **Menu-bar app** — Tray icon + frameless popup window, summoned via a global hotkey (Cmd + shift + space)
 - **Multi-editor recents** — pulls recently opened projects from supported tools
 - **Fast fuzzy search** — type to filter, Enter to open
 - **Native macOS integration** — reads Spotlight metadata (`mdfind`) and per-app
