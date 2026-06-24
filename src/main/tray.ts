@@ -7,21 +7,21 @@ export interface TrayActions {
 }
 
 /**
- * Menu-bar presence. Left/right click opens the menu; "Show DevGlimt" is the
+ * Menu-bar presence. Left/right click opens the menu; "Show Glimt" is the
  * mouse path to the popup (the keyboard path is the global shortcut).
  */
 export function createTray(actions: TrayActions): Tray {
   // Empty image renders as a default template slot; swap for a real icon asset.
   const tray = new Tray(nativeImage.createEmpty())
-  tray.setToolTip('DevGlimt')
+  tray.setToolTip('Glimt')
 
   const menu = Menu.buildFromTemplate([
-    { label: 'Show DevGlimt', click: actions.onShow },
+    { label: 'Show Glimt', click: actions.onShow },
     { label: 'Refresh Now', click: actions.onRefresh },
     { type: 'separator' },
     { label: 'Settings…', click: actions.onSettings },
     { type: 'separator' },
-    { label: 'Quit DevGlimt', click: () => app.quit() },
+    { label: 'Quit Glimt', click: () => app.quit() },
   ])
   tray.setContextMenu(menu)
   return tray

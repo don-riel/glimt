@@ -1,6 +1,6 @@
 import { app, BrowserWindow, Tray } from 'electron'
 import path from 'path'
-import type { DevGlimtConfig, MergedEntry } from '../shared/types'
+import type { GlimtConfig, MergedEntry } from '../shared/types'
 import { RecentsCache } from './cache'
 import { loadConfig } from './config'
 import { registerIpc } from './ipc'
@@ -21,14 +21,14 @@ function openSettings(): void {
   settingsWin = new BrowserWindow({
     width: 460,
     height: 520,
-    title: 'DevGlimt Settings',
+    title: 'Glimt Settings',
     webPreferences: {
       preload: path.join(__dirname, '..', 'preload', 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
   })
-  const base = process.env.DEVGLIMT_RENDERER_URL
+  const base = process.env.GLIMT_RENDERER_URL
   if (base) {
     void settingsWin.loadURL(`${base}#/settings`)
   } else {
@@ -41,11 +41,11 @@ function openSettings(): void {
   })
 }
 
-function applyShortcut(config: DevGlimtConfig): void {
+function applyShortcut(config: GlimtConfig): void {
   registerShortcut(config.shortcut, () => popup.toggle())
 }
 
-function onConfigChanged(config: DevGlimtConfig): void {
+function onConfigChanged(config: GlimtConfig): void {
   applyShortcut(config)
   cache.setDisabled(config.disabledAdapters)
 }

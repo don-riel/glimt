@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react'
-import type { AdapterStatus, DevGlimtConfig } from '../shared/types'
+import type { AdapterStatus, GlimtConfig } from '../shared/types'
 
 /** Placeholder settings: shortcut field + adapter enable toggles. */
 export function Settings() {
-  const [config, setConfig] = useState<DevGlimtConfig | null>(null)
+  const [config, setConfig] = useState<GlimtConfig | null>(null)
   const [statuses, setStatuses] = useState<AdapterStatus[]>([])
 
   useEffect(() => {
-    window.devglimt.getConfig().then(setConfig)
-    window.devglimt.getStatuses().then(setStatuses)
+    window.glimt.getConfig().then(setConfig)
+    window.glimt.getStatuses().then(setStatuses)
   }, [])
 
   if (!config) return <div className="settings">Loading…</div>
 
-  function save(next: DevGlimtConfig) {
+  function save(next: GlimtConfig) {
     setConfig(next)
-    void window.devglimt.setConfig(next)
+    void window.glimt.setConfig(next)
   }
 
   function toggleAdapter(id: string, disabled: boolean) {
@@ -27,7 +27,7 @@ export function Settings() {
 
   return (
     <div className="settings">
-      <h2>DevGlimt Settings</h2>
+      <h2>Glimt Settings</h2>
 
       <label className="field">
         <span>Global shortcut</span>

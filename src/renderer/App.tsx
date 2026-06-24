@@ -15,9 +15,9 @@ export function App() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    window.devglimt.getRecents().then(setEntries)
-    window.devglimt.onRecentsUpdated(setEntries)
-    return () => window.devglimt.offRecentsUpdated()
+    window.glimt.getRecents().then(setEntries)
+    window.glimt.onRecentsUpdated(setEntries)
+    return () => window.glimt.offRecentsUpdated()
   }, [])
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export function App() {
     if (!entry) return
     // Placeholder: open the most-recent tool association. Real UI shows the
     // multi-tool picker when associations.length > 1.
-    void window.devglimt.openEntry(entry.associations[0].entryId)
+    void window.glimt.openEntry(entry.associations[0].entryId)
   }
 
   function onKeyDown(e: React.KeyboardEvent) {

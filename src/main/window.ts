@@ -36,8 +36,8 @@ export class PopupWindow {
     win.on('blur', () => this.hide())
 
     // Dev points at the Vite server; prod loads the built renderer bundle.
-    if (process.env.DEVGLIMT_RENDERER_URL) {
-      void win.loadURL(process.env.DEVGLIMT_RENDERER_URL)
+    if (process.env.GLIMT_RENDERER_URL) {
+      void win.loadURL(process.env.GLIMT_RENDERER_URL)
     } else {
       void win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'))
     }

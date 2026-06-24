@@ -1,7 +1,7 @@
 {
-  "name": "DevGlimt",
+  "name": "glimt",
   "version": "1.0.0",
-  "description": "DevGlimt — a unified launcher for recently opened development projects on macOS.",
+  "description": "Glimt — a unified launcher for recently opened development projects on macOS.",
   "license": "MIT",
   "author": "Donni",
   "type": "commonjs",

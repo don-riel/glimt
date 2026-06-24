@@ -67,7 +67,7 @@ export interface AdapterStatus {
   error?: string
 }
 
-export interface DevGlimtConfig {
+export interface GlimtConfig {
   /** Electron accelerator string, e.g. "CommandOrControl+Shift+Space". */
   shortcut: string
   /** Tool ids the user has hidden. */

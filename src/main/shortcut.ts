@@ -15,7 +15,7 @@ export function registerShortcut(accelerator: string, onTrigger: () => void): bo
   }
   if (!ok) {
     new Notification({
-      title: 'DevGlimt shortcut unavailable',
+      title: 'Glimt shortcut unavailable',
       body: `${accelerator} is already in use. Pick another in Settings.`,
     }).show()
   }

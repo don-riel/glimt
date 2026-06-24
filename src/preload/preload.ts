@@ -1,12 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type {
   AdapterStatus,
-  DevGlimtConfig,
+  GlimtConfig,
   MergedEntry,
 } from '../shared/types'
 
 /**
- * The only seam between main and renderer. The renderer calls window.devglimt.*;
+ * The only seam between main and renderer. The renderer calls window.glimt.*;
  * nothing else from Node is exposed. Keep this surface minimal and typed — it
  * is the contract the renderer (frontend half) builds against.
  */
@@ -25,8 +25,8 @@ const api = {
   // explicit path for in-renderer dismissal.
   hidePopup: (): Promise<void> => ipcRenderer.invoke('hide-popup'),
 
-  getConfig: (): Promise<DevGlimtConfig> => ipcRenderer.invoke('get-config'),
-  setConfig: (config: DevGlimtConfig): Promise<DevGlimtConfig> =>
+  getConfig: (): Promise<GlimtConfig> => ipcRenderer.invoke('get-config'),
+  setConfig: (config: GlimtConfig): Promise<GlimtConfig> =>
     ipcRenderer.invoke('set-config', config),
 
   openFdaSettings: (): Promise<void> => ipcRenderer.invoke('open-fda-settings'),
@@ -40,6 +40,6 @@ const api = {
   },
 }
 
-contextBridge.exposeInMainWorld('devglimt', api)
+contextBridge.exposeInMainWorld('glimt', api)
 
-export type DevGlimtApi = typeof api
+export type GlimtApi = typeof api

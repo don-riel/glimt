@@ -1,8 +1,8 @@
-# DevGlimt
+# Glimt
 
 A unified launcher for recently opened development projects on macOS.
 
-DevGlimt lives in your menu bar and gives you a Spotlight/Raycast-style popup of
+Glimt lives in your menu bar and gives you a Spotlight/Raycast-style popup of
 the projects you've recently worked on — across multiple editors and IDEs — so you
 can jump back into work with a single keystroke.
 

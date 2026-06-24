@@ -1,8 +1,8 @@
-import type { DevGlimtApi } from '../preload/preload'
+import type { GlimtApi } from '../preload/preload'
 
 declare global {
   interface Window {
-    devglimt: DevGlimtApi
+    glimt: GlimtApi
   }
 }
 

@@ -1,12 +1,12 @@
 import { ipcMain, shell } from 'electron'
-import type { DevGlimtConfig } from '../shared/types'
+import type { GlimtConfig } from '../shared/types'
 import type { RecentsCache } from './cache'
 import { loadConfig, saveConfig } from './config'
 import { FDA_SETTINGS_URL } from './fda'
 
 export interface IpcContext {
   cache: RecentsCache
-  onConfigChanged: (config: DevGlimtConfig) => void
+  onConfigChanged: (config: GlimtConfig) => void
   hidePopup: () => void
 }
 
@@ -32,7 +32,7 @@ export function registerIpc(ctx: IpcContext): void {
 
   ipcMain.handle('get-config', () => loadConfig())
 
-  ipcMain.handle('set-config', (_e, config: DevGlimtConfig) => {
+  ipcMain.handle('set-config', (_e, config: GlimtConfig) => {
     saveConfig(config)
     ctx.onConfigChanged(config)
     return config
