@@ -1,40 +1,29 @@
-// Pure ranking layer for the popup. No React, no IPC — input is the merged
-// recents list + the current query, output is a ranked, match-annotated slice
-// the UI renders. Being pure makes it testable in isolation (see harness at the
-// bottom: `SCORE_TEST=1 npx tsx src/renderer/score.ts`).
+// Pure ranking layer — input: merged recents + query; output: ranked slice for
+// the UI. Pure functions make this testable in isolation.
+// Run tests: `SCORE_TEST=1 npx tsx src/renderer/score.ts`
 
 import type { MergedEntry } from '../shared/types'
 
-/** Max rows shown in the popup. */
 export const MAX_RESULTS = 8
 
 export interface MatchResult {
-  /** Higher = better. Relative only; not normalized. */
   score: number
-  /** Indices into the matched text of each query char, for highlighting. */
   indices: number[]
 }
 
 export interface RankedEntry {
   entry: MergedEntry
-  /** Which field the indices point into, so the UI highlights the right string. */
   field: 'label' | 'path'
   indices: number[]
 }
 
-/** Characters that begin a "word" — matches right after one score higher. */
 const SEPARATORS = new Set(['/', '-', '_', '.', ' '])
 
 function isWordBoundary(text: string, i: number): boolean {
   return i === 0 || SEPARATORS.has(text[i - 1])
 }
 
-/**
- * Greedy subsequence match: every char of `query` must appear in `text` in
- * order. Returns the matched indices + a score, or null if no match.
- *
- * The matching loop is fixed; the SCORE is the tunable part (scoreMatch below).
- */
+/** Greedy subsequence match. Returns matched indices + score, or null on no match. */
 export function fuzzyMatch(query: string, text: string): MatchResult | null {
   const q = query.toLowerCase()
   const t = text.toLowerCase()
@@ -48,53 +37,40 @@ export function fuzzyMatch(query: string, text: string): MatchResult | null {
       qi++
     }
   }
-  if (qi < q.length) return null // not all query chars found in order
+  if (qi < q.length) return null
 
   return { score: scoreMatch(indices, t), indices }
 }
 
 /**
- * Turn a set of matched indices into a quality score. This is the heart of
- * ranking quality — see TODO(human) below.
- *
- * Contract: pure. Higher return = better match. Same input must give same
- * output. `indices` is sorted ascending; each is a position in `text`.
- *
- * Signals worth combining (tune the weights — there's no single right answer):
- *   + prefix bonus:        indices[0] === 0
- *   + word-boundary bonus: isWordBoundary(text, idx) for each matched idx
- *                          (this is the highest-leverage signal — it makes
- *                           "mm" favor "menu-mate" over a mid-word coincidence)
- *   + contiguity bonus:    indices[k] + 1 === indices[k+1]
- *   - gap penalty:         distance between consecutive indices
- *   - leading penalty:     how far in the first match sits (indices[0])
+ * Quality score for a set of matched indices. Higher = better match.
+ * Word-boundary hits are the highest-leverage signal — they make "mm" prefer
+ * "menu-mate" over a mid-word coincidence.
  */
 function scoreMatch(indices: number[], text: string): number {
-  // TODO(human): replace this naive baseline with a real weighted score.
-  // Baseline below only rewards an early first match — good enough to make the
-  // test harness run, weak enough that you'll see ranking improve as you add
-  // the word-boundary / contiguity / gap signals listed above.
-  return indices.length === 0 ? 0 : -indices[0]
+  if (indices.length === 0) return 0
+  let score = -indices[0] // leading penalty: prefer early-starting matches
+  for (let k = 0; k < indices.length; k++) {
+    if (isWordBoundary(text, indices[k])) score += 3
+    if (k > 0) {
+      if (indices[k] === indices[k - 1] + 1) score += 1
+      else score -= 0.1 * (indices[k] - indices[k - 1] - 1)
+    }
+  }
+  return score
 }
 
-/**
- * Recency weight from a lastOpened timestamp. Null (e.g. VS Code, which only
- * gives list order, no timestamps) is neutral so those entries rank on pure
- * text match. Multiplicative so a strong text match still beats a stale-but-
- * recent weak one.
- */
-function recencyMultiplier(lastOpened: Date | null): number {
-  if (!lastOpened) return 1
+/** Recency contribution in [0, 0.4]. Null (no timestamp) → 0, no bonus. */
+function recencyScore(lastOpened: Date | null): number {
+  if (!lastOpened) return 0
   const ageDays = (Date.now() - lastOpened.getTime()) / 86_400_000
-  // Today -> ~1.4, two weeks -> ~1.15, months -> ~1.0.
-  return 1 + 0.4 * Math.exp(-ageDays / 14)
+  return 0.4 * Math.exp(-ageDays / 14)
 }
 
 /**
- * Rank merged entries for a query. Empty query short-circuits to the input
- * order (main already sorts newest-first), so this never re-sorts a blank
- * search. Otherwise: match each entry against the better of label/path, blend
- * recency, sort desc, cap at MAX_RESULTS.
+ * Rank merged entries for a query. Empty query returns input order (main already
+ * sorts newest-first). Otherwise: match against label/path with field weights,
+ * blend with recency, sort desc, cap at MAX_RESULTS.
  */
 export function rankEntries(query: string, entries: MergedEntry[]): RankedEntry[] {
   const q = query.trim()
@@ -110,11 +86,18 @@ export function rankEntries(query: string, entries: MergedEntry[]): RankedEntry[
     const onPath = fuzzyMatch(q, entry.path)
     if (!onLabel && !onPath) continue
 
-    // Take whichever field scored higher; carry its indices for highlighting.
-    const useLabel = (onLabel?.score ?? -Infinity) >= (onPath?.score ?? -Infinity)
+    // Label is high-signal (1.0x), path is low-signal (0.3x). Weighting shifts
+    // winner-takes-all toward label without exposing two index arrays to the UI.
+    const weightedLabel = onLabel ? onLabel.score * 1.0 : -Infinity
+    const weightedPath = onPath ? onPath.score * 0.3 : -Infinity
+    const useLabel = weightedLabel >= weightedPath
     const best = (useLabel ? onLabel : onPath)!
     const field = useLabel ? 'label' : 'path'
-    const final = best.score * recencyMultiplier(entry.lastOpened)
+
+    // Sigmoid maps scoreMatch output (−∞, +∞) → (0, 1): strong match → near 1.
+    const matchScore01 = 1 / (1 + Math.exp(-best.score))
+
+    const final = matchScore01 * 0.6 + recencyScore(entry.lastOpened)
 
     scored.push({ ranked: { entry, field, indices: best.indices }, final })
   }
@@ -124,8 +107,6 @@ export function rankEntries(query: string, entries: MergedEntry[]): RankedEntry[
 }
 
 // --- Test harness ----------------------------------------------------------
-// Runs only under Node with SCORE_TEST set; the `typeof process` guard keeps it
-// inert in the browser bundle. Run: `SCORE_TEST=1 npx tsx src/renderer/score.ts`
 if (typeof process !== 'undefined' && process.env.SCORE_TEST) {
   const mk = (label: string, path: string, lastOpened: Date | null): MergedEntry => ({
     id: path,
@@ -155,24 +136,24 @@ if (typeof process !== 'undefined' && process.env.SCORE_TEST) {
     }
   }
 
-  // fuzzyMatch basics
   const mm = fuzzyMatch('mm', 'menumate')
   check('mm matches menumate', mm !== null)
   check('mm indices = [0,4]', JSON.stringify(mm?.indices) === '[0,4]')
   check('xyz no match', fuzzyMatch('xyz', 'menumate') === null)
 
-  // empty query preserves order, caps length
   const empty = rankEntries('', fixture)
   check('empty preserves first', empty[0]?.entry.label === 'menumate')
   check('empty capped', empty.length <= MAX_RESULTS)
 
-  // query ranks relevant entries to the top (note: weak with baseline scoring —
-  // these tighten once you implement scoreMatch)
   const api = rankEntries('api', fixture).map((r) => r.entry.label)
   check('api surfaces *-api entries', api.includes('menumate-api') && api.includes('kodepuls.api'))
 
-  // null lastOpened must not throw
   check('null lastOpened ok', rankEntries('men', fixture).length > 0)
+
+  const recent2 = mk('glimt', '/Users/d/dev/glimt', new Date())
+  const stale2 = mk('glimt2', '/Users/d/dev/glimt2', new Date(Date.now() - 90 * 86_400_000))
+  const byRecency = rankEntries('gli', [stale2, recent2])
+  check('recency lifts recent entry', byRecency[0]?.entry.label === 'glimt')
 
   console.log(`score.ts tests: ${pass} passed, ${fail} failed`)
 }

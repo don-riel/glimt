@@ -1,13 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { MergedEntry } from '../shared/types'
+import { rankEntries } from './score'
+import type { RankedEntry } from './score'
 
-const MAX_RESULTS = 8
-
-/**
- * Placeholder popup. Proves the IPC wiring end-to-end: loads recents, subscribes
- * to push updates, filters by substring, opens on click/Enter. This is the seam
- * the real fuzzy-search / multi-tool-picker UI gets built on top of.
- */
 export function App() {
   const [entries, setEntries] = useState<MergedEntry[]>([])
   const [query, setQuery] = useState('')
@@ -24,27 +19,18 @@ export function App() {
     inputRef.current?.focus()
   }, [])
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    const matched = q
-      ? entries.filter(
-          (e) =>
-            e.label.toLowerCase().includes(q) ||
-            e.path.toLowerCase().includes(q),
-        )
-      : entries
-    return matched.slice(0, MAX_RESULTS)
-  }, [entries, query])
+  const results: RankedEntry[] = useMemo(
+    () => rankEntries(query, entries),
+    [entries, query],
+  )
 
   useEffect(() => {
     setSelected(0)
   }, [query])
 
-  function open(entry: MergedEntry | undefined) {
-    if (!entry) return
-    // Placeholder: open the most-recent tool association. Real UI shows the
-    // multi-tool picker when associations.length > 1.
-    void window.glimt.openEntry(entry.associations[0].entryId)
+  function open(result: RankedEntry | undefined) {
+    if (!result) return
+    void window.glimt.openEntry(result.entry.associations[0].entryId)
   }
 
   function onKeyDown(e: React.KeyboardEvent) {
@@ -70,17 +56,17 @@ export function App() {
         onKeyDown={onKeyDown}
       />
       <ul className="list">
-        {results.map((entry, i) => (
+        {results.map((result, i) => (
           <li
-            key={entry.id}
+            key={result.entry.id}
             className={`row ${i === selected ? 'selected' : ''}`}
             onMouseEnter={() => setSelected(i)}
-            onClick={() => open(entry)}
+            onClick={() => open(result)}
           >
-            <span className="label">{entry.label}</span>
-            <span className="path">{entry.path}</span>
+            <span className="label">{result.entry.label}</span>
+            <span className="path">{result.entry.path}</span>
             <span className="tools">
-              {entry.associations.map((a) => a.toolLabel).join(', ')}
+              {result.entry.associations.map((a) => a.toolLabel).join(', ')}
             </span>
           </li>
         ))}
