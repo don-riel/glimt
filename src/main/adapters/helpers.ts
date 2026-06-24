@@ -8,8 +8,8 @@ import { promisify } from 'util'
 const execFileAsync = promisify(execFile)
 
 /** Expand ~, resolve symlinks, strip trailing slash. Best-effort — falls back to input. */
-export function normalizePath(p: string): string {
-  let out = p
+export function normalizePath(rawPath: string): string {
+  let out = rawPath
   if (out.startsWith('~')) out = path.join(homedir(), out.slice(1))
   out = path.resolve(out)
   try {
@@ -32,13 +32,13 @@ export function fileUriToPath(uri: string): string | null {
 }
 
 /** Stable id for an entry. */
-export function entryId(tool: string, p: string): string {
-  return createHash('sha1').update(`${tool}\0${p}`).digest('hex').slice(0, 16)
+export function entryId(tool: string, filePath: string): string {
+  return createHash('sha1').update(`${tool}\0${filePath}`).digest('hex').slice(0, 16)
 }
 
 /** Last path segment, used as the display label. */
-export function basenameLabel(p: string): string {
-  return path.basename(p) || p
+export function basenameLabel(filePath: string): string {
+  return path.basename(filePath) || filePath
 }
 
 /**

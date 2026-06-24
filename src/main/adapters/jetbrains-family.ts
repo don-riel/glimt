@@ -44,11 +44,11 @@ function versionFromDir(dir: string, prefix: string): string | null {
 
 /** Sort version strings like "2024.3" descending. */
 function compareVersions(a: string, b: string): number {
-  const pa = a.split('.').map(Number)
-  const pb = b.split('.').map(Number)
-  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-    const d = (pb[i] ?? 0) - (pa[i] ?? 0)
-    if (d !== 0) return d
+  const aParts = a.split('.').map(Number)
+  const bParts = b.split('.').map(Number)
+  for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+    const diff = (bParts[i] ?? 0) - (aParts[i] ?? 0)
+    if (diff !== 0) return diff
   }
   return 0
 }
@@ -67,7 +67,7 @@ function resolveProducts(): ResolvedProduct[] {
 
   for (const product of PRODUCTS) {
     const versions = dirs
-      .map((d) => ({ dir: d, version: versionFromDir(d, product.dirPrefix) }))
+      .map((dir) => ({ dir, version: versionFromDir(dir, product.dirPrefix) }))
       .filter((v): v is { dir: string; version: string } => v.version !== null)
       .sort((a, b) => compareVersions(a.version, b.version))
 
