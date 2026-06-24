@@ -1,0 +1,120 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Popup */
+.popup {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(30, 30, 32, 0.96);
+  color: #eee;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.search {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  font-size: 20px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.list {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: 'label tools' 'path tools';
+  column-gap: 12px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.row.selected {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.label {
+  grid-area: label;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.path {
+  grid-area: path;
+  font-size: 11px;
+  color: #888;
+  direction: rtl;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tools {
+  grid-area: tools;
+  align-self: center;
+  font-size: 11px;
+  color: #9aa;
+}
+
+.empty {
+  padding: 20px;
+  color: #888;
+  text-align: center;
+}
+
+/* Settings */
+.settings {
+  padding: 20px;
+  font-size: 14px;
+  color: #222;
+}
+
+.settings h2 {
+  margin-bottom: 16px;
+}
+
+.settings h3 {
+  margin: 16px 0 8px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field input {
+  padding: 6px 8px;
+  font-size: 14px;
+}
+
+.adapters {
+  list-style: none;
+}
+
+.adapters li {
+  padding: 4px 0;
+}
+
+.status {
+  color: #999;
+  font-size: 12px;
+}

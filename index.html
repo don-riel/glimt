@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+  window.api.sfl3.list().then(apps => {
+    console.log('sfl3 apps:', apps)
+    return Promise.all(apps.map(a => window.api.sfl3.read(a.path).then(docs => ({ ...a, docs }))))
+  }).then(results => {
+    console.log('sfl3 full results:', results)
+  }).catch(e => console.error(e))
+</script>
+</body>
+</html>
