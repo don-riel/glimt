@@ -68,6 +68,19 @@ function recencyScore(lastOpened: Date | null): number {
 }
 
 /**
+ * Map a weighted match score (roughly [-2, 12] in practice) into [0, 1] for
+ * blending with recency. Must be monotonic (higher score → higher output) and
+ * spread typical scores across the range instead of saturating near 1.
+ */
+function normalizeScore(weightedScore: number): number {
+  // Scaled sigmoid centered on a "decent match" (~4.5) with a wide scale so the
+  // common range stays on the curve's slope instead of saturating near 1.
+  const center = 4.5
+  const scale = 3.5
+  return 1 / (1 + Math.exp(-(weightedScore - center) / scale))
+}
+
+/**
  * Rank merged entries for a query. Empty query returns input order (main already
  * sorts newest-first). Otherwise: match against label/path with field weights,
  * blend with recency, sort desc, cap at MAX_RESULTS.
@@ -93,9 +106,11 @@ export function rankEntries(query: string, entries: MergedEntry[]): RankedEntry[
     const useLabel = weightedLabel >= weightedPath
     const best = (useLabel ? onLabel : onPath)!
     const field = useLabel ? 'label' : 'path'
+    // Carry the WEIGHTED score forward (not raw best.score) so the path penalty
+    // survives into the cross-entry ranking, not just the label-vs-path tiebreak.
+    const weightedScore = useLabel ? weightedLabel : weightedPath
 
-    // Sigmoid maps scoreMatch output (−∞, +∞) → (0, 1): strong match → near 1.
-    const matchScore01 = 1 / (1 + Math.exp(-best.score))
+    const matchScore01 = normalizeScore(weightedScore)
 
     const final = matchScore01 * 0.6 + recencyScore(entry.lastOpened)
 
