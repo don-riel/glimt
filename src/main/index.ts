@@ -62,7 +62,12 @@ async function bootstrap(): Promise<void> {
     popup.send('recents-updated', merged)
   })
 
-  registerIpc({ cache, onConfigChanged, hidePopup: () => popup.hide() })
+  registerIpc({
+    cache,
+    onConfigChanged,
+    hidePopup: () => popup.hide(),
+    resizePopup: (h) => popup.setHeight(h),
+  })
 
   tray = createTray({
     onShow: () => popup.show(),

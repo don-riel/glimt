@@ -25,6 +25,10 @@ const api = {
   // explicit path for in-renderer dismissal.
   hidePopup: (): Promise<void> => ipcRenderer.invoke('hide-popup'),
 
+  // Ask main to grow/shrink the popup to fit rendered content (Spotlight-style).
+  resizePopup: (height: number): Promise<void> =>
+    ipcRenderer.invoke('resize-popup', height),
+
   getConfig: (): Promise<GlimtConfig> => ipcRenderer.invoke('get-config'),
   setConfig: (config: GlimtConfig): Promise<GlimtConfig> =>
     ipcRenderer.invoke('set-config', config),
