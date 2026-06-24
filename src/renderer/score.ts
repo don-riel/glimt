@@ -25,21 +25,21 @@ function isWordBoundary(text: string, i: number): boolean {
 
 /** Greedy subsequence match. Returns matched indices + score, or null on no match. */
 export function fuzzyMatch(query: string, text: string): MatchResult | null {
-  const q = query.toLowerCase()
-  const t = text.toLowerCase()
-  if (q.length === 0) return { score: 0, indices: [] }
+  const lowerQuery = query.toLowerCase()
+  const lowerText = text.toLowerCase()
+  if (lowerQuery.length === 0) return { score: 0, indices: [] }
 
   const indices: number[] = []
-  let qi = 0
-  for (let ti = 0; ti < t.length && qi < q.length; ti++) {
-    if (t[ti] === q[qi]) {
-      indices.push(ti)
-      qi++
+  let queryIndex = 0
+  for (let textIndex = 0; textIndex < lowerText.length && queryIndex < lowerQuery.length; textIndex++) {
+    if (lowerText[textIndex] === lowerQuery[queryIndex]) {
+      indices.push(textIndex)
+      queryIndex++
     }
   }
-  if (qi < q.length) return null
+  if (queryIndex < lowerQuery.length) return null
 
-  return { score: scoreMatch(indices, t), indices }
+  return { score: scoreMatch(indices, lowerText), indices }
 }
 
 /**
@@ -50,11 +50,11 @@ export function fuzzyMatch(query: string, text: string): MatchResult | null {
 function scoreMatch(indices: number[], text: string): number {
   if (indices.length === 0) return 0
   let score = -indices[0] // leading penalty: prefer early-starting matches
-  for (let k = 0; k < indices.length; k++) {
-    if (isWordBoundary(text, indices[k])) score += 3
-    if (k > 0) {
-      if (indices[k] === indices[k - 1] + 1) score += 1
-      else score -= 0.1 * (indices[k] - indices[k - 1] - 1)
+  for (let i = 0; i < indices.length; i++) {
+    if (isWordBoundary(text, indices[i])) score += 3
+    if (i > 0) {
+      if (indices[i] === indices[i - 1] + 1) score += 1
+      else score -= 0.1 * (indices[i] - indices[i - 1] - 1)
     }
   }
   return score
@@ -86,8 +86,8 @@ function normalizeScore(weightedScore: number): number {
  * blend with recency, sort desc, cap at MAX_RESULTS.
  */
 export function rankEntries(query: string, entries: MergedEntry[]): RankedEntry[] {
-  const q = query.trim()
-  if (q === '') {
+  const trimmedQuery = query.trim()
+  if (trimmedQuery === '') {
     return entries
       .slice(0, MAX_RESULTS)
       .map((entry) => ({ entry, field: 'label' as const, indices: [] }))
@@ -95,8 +95,8 @@ export function rankEntries(query: string, entries: MergedEntry[]): RankedEntry[
 
   const scored: { ranked: RankedEntry; final: number }[] = []
   for (const entry of entries) {
-    const onLabel = fuzzyMatch(q, entry.label)
-    const onPath = fuzzyMatch(q, entry.path)
+    const onLabel = fuzzyMatch(trimmedQuery, entry.label)
+    const onPath = fuzzyMatch(trimmedQuery, entry.path)
     if (!onLabel && !onPath) continue
 
     // Label is high-signal (1.0x), path is low-signal (0.3x). Weighting shifts
@@ -110,9 +110,9 @@ export function rankEntries(query: string, entries: MergedEntry[]): RankedEntry[
     // survives into the cross-entry ranking, not just the label-vs-path tiebreak.
     const weightedScore = useLabel ? weightedLabel : weightedPath
 
-    const matchScore01 = normalizeScore(weightedScore)
+    const matchScore = normalizeScore(weightedScore)
 
-    const final = matchScore01 * 0.6 + recencyScore(entry.lastOpened)
+    const final = matchScore * 0.6 + recencyScore(entry.lastOpened)
 
     scored.push({ ranked: { entry, field, indices: best.indices }, final })
   }

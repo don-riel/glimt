@@ -153,18 +153,18 @@ export class RecentsCache extends EventEmitter {
     }
 
     const list = [...byPath.values()]
-    for (const m of list) {
-      m.associations.sort(
+    for (const entry of list) {
+      entry.associations.sort(
         (a, b) => (b.lastOpened?.getTime() ?? 0) - (a.lastOpened?.getTime() ?? 0),
       )
     }
     // Timestamped entries first (newest first), then untimed by discovery order.
     list.sort((a, b) => {
-      const ta = a.lastOpened?.getTime()
-      const tb = b.lastOpened?.getTime()
-      if (ta != null && tb != null) return tb - ta
-      if (ta != null) return -1
-      if (tb != null) return 1
+      const aTime = a.lastOpened?.getTime()
+      const bTime = b.lastOpened?.getTime()
+      if (aTime != null && bTime != null) return bTime - aTime
+      if (aTime != null) return -1
+      if (bTime != null) return 1
       return (seqByPath.get(a.path) ?? 0) - (seqByPath.get(b.path) ?? 0)
     })
 

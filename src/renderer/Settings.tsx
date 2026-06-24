@@ -39,18 +39,18 @@ export function Settings() {
 
       <h3>Tools</h3>
       <ul className="adapters">
-        {statuses.map((s) => (
-          <li key={s.id}>
+        {statuses.map((status) => (
+          <li key={status.id}>
             <label>
               <input
                 type="checkbox"
-                checked={!config.disabledAdapters.includes(s.id)}
-                onChange={(e) => toggleAdapter(s.id, !e.target.checked)}
+                checked={!config.disabledAdapters.includes(status.id)}
+                onChange={(e) => toggleAdapter(status.id, !e.target.checked)}
               />
-              {s.label}
+              {status.label}
               <span className="status">
-                {s.installed ? '' : ' (not installed)'}
-                {s.error ? ` ⚠ ${s.error}` : ''}
+                {status.installed ? '' : ' (not installed)'}
+                {status.error ? ` ⚠ ${status.error}` : ''}
               </span>
             </label>
           </li>

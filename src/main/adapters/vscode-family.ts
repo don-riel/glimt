@@ -86,7 +86,7 @@ function parseStorageJson(p: VSCodeProduct): RecentEntry[] {
   if (!fileMenu?.items) return []
 
   const recentNode = (fileMenu.items as any[]).find(
-    (i) => i?.id === 'submenuitem.MenubarRecentMenu',
+    (item) => item?.id === 'submenuitem.MenubarRecentMenu',
   )
   const items: any[] = recentNode?.submenu?.items ?? []
 
@@ -94,13 +94,13 @@ function parseStorageJson(p: VSCodeProduct): RecentEntry[] {
   for (const item of items) {
     const id: string = item?.id ?? ''
     if (!id.startsWith('openRecent')) continue
-    const raw = uriToPath(item.uri)
-    if (!raw) continue
-    const norm = normalizePath(raw)
+    const uriPath = uriToPath(item.uri)
+    if (!uriPath) continue
+    const normalizedPath = normalizePath(uriPath)
     out.push({
-      id: entryId(p.id, norm),
-      path: norm,
-      label: basenameLabel(norm),
+      id: entryId(p.id, normalizedPath),
+      path: normalizedPath,
+      label: basenameLabel(normalizedPath),
       tool: p.id,
       toolLabel: p.toolLabel,
       toolIcon: null,

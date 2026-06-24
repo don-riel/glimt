@@ -66,7 +66,7 @@ export function App() {
             <span className="label">{result.entry.label}</span>
             <span className="path">{result.entry.path}</span>
             <span className="tools">
-              {result.entry.associations.map((a) => a.toolLabel).join(', ')}
+              {result.entry.associations.map((assoc) => assoc.toolLabel).join(', ')}
             </span>
           </li>
         ))}
