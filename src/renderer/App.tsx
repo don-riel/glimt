@@ -35,10 +35,21 @@ export function App() {
     setExpandedTool(null)
   }, [query])
 
-  // Keep the highlighted row in view when navigating past the visible area.
+  // results can shrink while the popup is open (watcher refresh) without a
+  // query change. Clamp the cursor so it never points past the live list.
+  useEffect(() => {
+    const row = Math.min(selectedRow, Math.max(results.length - 1, 0))
+    if (row !== selectedRow) setSelectedRow(row)
+    const tools = results[row]?.entry.associations ?? []
+    setExpandedTool((t) =>
+      t === null ? null : Math.min(t, Math.max(tools.length - 1, 0)))
+  }, [results])
+
+  // Keep the highlighted row in view when navigating past the visible area, or
+  // when expanding a row makes a tall picker overflow below the fold.
   useEffect(() => {
     selectedRef.current?.scrollIntoView({ block: 'nearest' })
-  }, [selectedRow])
+  }, [selectedRow, expandedTool])
 
   // Report rendered height to main so the window fits its content. Re-measured
   // whenever the rows or expansion change — the popup element itself is clamped
@@ -62,13 +73,15 @@ export function App() {
   function activate(result: RankedEntry | undefined) {
     if (!result) return
     const { associations } = result.entry
-    if (associations.length <= 1) {
+    if (associations.length === 0) return
+    if (associations.length === 1) {
       open(associations[0].entryId)
     } else if (expandedTool === null) {
       // Picker-first: a multi-tool row expands to a tool chooser before opening.
       setExpandedTool(0)
     } else {
-      open(associations[expandedTool].entryId)
+      const assoc = associations[expandedTool]
+      if (assoc) open(assoc.entryId)
     }
   }
 
@@ -91,9 +104,10 @@ export function App() {
         selectRow(Math.max(selectedRow - 1, 0))
       }
     } else if (e.key === 'Tab' || e.key === 'ArrowRight') {
+      // Tab must never blur the input — that kills keyboard nav silently.
+      e.preventDefault()
       // Enter the tool picker for a multi-tool row.
       if (expandedTool === null && tools.length > 1) {
-        e.preventDefault()
         setExpandedTool(0)
       }
     } else if (e.key === 'Enter') {
