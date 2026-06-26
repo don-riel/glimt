@@ -100,6 +100,21 @@ export class RecentsCache extends EventEmitter {
           label: adapter.label,
           installed: true,
         })
+        // Resolve icons off the critical path: rows paint now with text badges,
+        // icons swap in via a re-emit once the subprocesses finish. Skip if a
+        // newer refresh already replaced this adapter's array.
+        if (adapter.resolveIcons) {
+          void adapter
+            .resolveIcons(entries)
+            .then(() => {
+              if (this.rawByAdapter.get(adapter.id) === entries) this.rebuild()
+            })
+            .catch((err) =>
+              console.error(
+                `icon resolve failed for ${adapter.id}: ${(err as Error).message}`,
+              ),
+            )
+        }
       }
     } catch (err) {
       this.rawByAdapter.set(adapter.id, [])

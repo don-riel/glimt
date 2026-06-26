@@ -180,13 +180,19 @@ export function App() {
 
 /** Render a tool's icon if extracted, otherwise a short text badge. */
 function ToolBadge({ association }: { association: EntryAssociation }) {
-  if (association.toolIcon) {
+  // Fall back to the text badge if the icon URL fails to load (cache evicted,
+  // serveIcon 404). Reset when the URL changes so a later valid one re-attempts.
+  const [failed, setFailed] = useState(false)
+  useEffect(() => setFailed(false), [association.toolIcon])
+
+  if (association.toolIcon && !failed) {
     return (
       <img
         className="badge-icon"
         src={association.toolIcon}
         alt={association.toolLabel}
         title={association.toolLabel}
+        onError={() => setFailed(true)}
       />
     )
   }

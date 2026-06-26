@@ -21,6 +21,12 @@ export interface Adapter {
   /** Parse the tool's recents store into normalized entries. */
   getRecents(): Promise<RecentEntry[]>
 
+  /**
+   * Resolve & stamp `toolIcon` on entries. Run in the background after getRecents
+   * so icon subprocesses never block first paint; safe to mutate entries in place.
+   */
+  resolveIcons?(entries: RecentEntry[]): Promise<void>
+
   /** Open one of this adapter's entries in its tool. */
   open(entry: RecentEntry): Promise<void>
 }

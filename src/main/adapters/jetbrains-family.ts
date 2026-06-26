@@ -167,8 +167,11 @@ export const jetbrainsFamilyAdapter: Adapter = {
         )
       }
     }
-    await attachIcons(out, (toolId) => PRODUCTS.find((p) => p.id === toolId)?.appName)
     return out
+  },
+
+  async resolveIcons(entries) {
+    await attachIcons(entries, PRODUCTS)
   },
 
   async open(entry) {

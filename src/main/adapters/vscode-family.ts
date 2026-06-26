@@ -199,8 +199,11 @@ export const vscodeFamilyAdapter: Adapter = {
   async getRecents() {
     const out: RecentEntry[] = []
     for (const p of installedProducts()) out.push(...parseProduct(p))
-    await attachIcons(out, (toolId) => PRODUCTS.find((p) => p.id === toolId)?.appName)
     return out
+  },
+
+  async resolveIcons(entries) {
+    await attachIcons(entries, PRODUCTS)
   },
 
   async open(entry) {
