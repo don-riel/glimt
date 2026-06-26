@@ -10,9 +10,9 @@ body {
   user-select: none;
 }
 
-/* Popup */
+/* Popup — sizes to its content; main resizes the window to match. */
 .popup {
-  height: 100vh;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
   background: rgba(30, 30, 32, 0.96);
@@ -34,14 +34,23 @@ body {
 .list {
   list-style: none;
   overflow-y: auto;
-  flex: 1;
+  /* Don't let flex shrink the list to the (clamped) window height — it must keep
+     its content height so the popup's scrollHeight reflects true content and the
+     window can grow to fit. */
+  flex: none;
+  /* ~8 rows visible before the list scrolls; the window stops growing here. */
+  max-height: 416px;
 }
 
 .row {
   display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas: 'label tools' 'path tools';
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    'label badges time'
+    'path  badges time'
+    'picker picker picker';
   column-gap: 12px;
+  align-items: center;
   padding: 10px 20px;
   cursor: pointer;
 }
@@ -54,6 +63,15 @@ body {
   grid-area: label;
   font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.label mark {
+  background: transparent;
+  color: #fff;
+  font-weight: 700;
 }
 
 .path {
@@ -67,11 +85,66 @@ body {
   text-overflow: ellipsis;
 }
 
-.tools {
-  grid-area: tools;
-  align-self: center;
+.badges {
+  grid-area: badges;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge {
+  font-size: 10px;
+  line-height: 1;
+  color: #cdd;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 3px 5px;
+  white-space: nowrap;
+}
+
+.badge-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.time {
+  grid-area: time;
   font-size: 11px;
-  color: #9aa;
+  color: #777;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 32px;
+}
+
+/* Inline tool picker for multi-tool rows */
+.tool-picker {
+  grid-area: picker;
+  list-style: none;
+  margin-top: 8px;
+}
+
+.tool-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #bbb;
+}
+
+.tool-option.selected {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.tool-option .tool-name {
+  flex: 1;
+}
+
+.tool-option .time {
+  min-width: auto;
 }
 
 .empty {

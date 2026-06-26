@@ -8,6 +8,7 @@ export interface IpcContext {
   cache: RecentsCache
   onConfigChanged: (config: GlimtConfig) => void
   hidePopup: () => void
+  resizePopup: (height: number) => void
 }
 
 /**
@@ -29,6 +30,8 @@ export function registerIpc(ctx: IpcContext): void {
   })
 
   ipcMain.handle('hide-popup', () => ctx.hidePopup())
+
+  ipcMain.handle('resize-popup', (_e, height: number) => ctx.resizePopup(height))
 
   ipcMain.handle('get-config', () => loadConfig())
 
