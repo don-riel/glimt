@@ -3,6 +3,7 @@ import { homedir } from 'os'
 import path from 'path'
 import { XMLParser } from 'fast-xml-parser'
 import type { RecentEntry } from '../../shared/types'
+import { attachIcons } from '../icons'
 import type { Adapter } from './types'
 import { basenameLabel, entryId, normalizePath, openApp } from './helpers'
 
@@ -166,6 +167,7 @@ export const jetbrainsFamilyAdapter: Adapter = {
         )
       }
     }
+    await attachIcons(out, (toolId) => PRODUCTS.find((p) => p.id === toolId)?.appName)
     return out
   },
 

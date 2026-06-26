@@ -22,7 +22,7 @@ export interface RecentEntry {
   tool: ToolId
   /** Human label for the tool, e.g. "VS Code", "Rider". */
   toolLabel: string
-  /** Absolute path to the tool's .app icon, extracted once. May be null until resolved. */
+  /** glimt-asset:// URL to the tool's cached icon. Null if the app can't be resolved. */
   toolIcon: string | null
   /** Last time this was opened in this tool. Null if the source has no timestamp. */
   lastOpened: Date | null

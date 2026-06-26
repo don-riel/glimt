@@ -184,7 +184,7 @@ function ToolBadge({ association }: { association: EntryAssociation }) {
     return (
       <img
         className="badge-icon"
-        src={`file://${association.toolIcon}`}
+        src={association.toolIcon}
         alt={association.toolLabel}
         title={association.toolLabel}
       />
