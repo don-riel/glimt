@@ -3,6 +3,7 @@ import { homedir } from 'os'
 import path from 'path'
 import Database from 'better-sqlite3'
 import type { EntryKind, RecentEntry } from '../../shared/types'
+import { attachIcons } from '../icons'
 import type { Adapter } from './types'
 import {
   basenameLabel,
@@ -199,6 +200,10 @@ export const vscodeFamilyAdapter: Adapter = {
     const out: RecentEntry[] = []
     for (const p of installedProducts()) out.push(...parseProduct(p))
     return out
+  },
+
+  async resolveIcons(entries) {
+    await attachIcons(entries, PRODUCTS)
   },
 
   async open(entry) {

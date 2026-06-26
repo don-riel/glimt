@@ -1,8 +1,9 @@
-import { app, BrowserWindow, Tray } from 'electron'
+import { app, BrowserWindow, protocol, Tray } from 'electron'
 import path from 'path'
 import type { GlimtConfig, MergedEntry } from '../shared/types'
 import { RecentsCache } from './cache'
 import { loadConfig } from './config'
+import { ICON_SCHEME, serveIcon } from './icons'
 import { registerIpc } from './ipc'
 import { registerShortcut, unregisterShortcuts } from './shortcut'
 import { createTray } from './tray'
@@ -12,6 +13,12 @@ let tray: Tray | null = null
 let settingsWin: BrowserWindow | null = null
 const popup = new PopupWindow()
 const cache = new RecentsCache()
+
+// Cached app icons are served on a privileged scheme so they load from both the
+// dev http renderer and the prod file:// renderer (plain file:// img is blocked in dev).
+protocol.registerSchemesAsPrivileged([
+  { scheme: ICON_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true } },
+])
 
 function openSettings(): void {
   if (settingsWin) {
@@ -53,6 +60,8 @@ function onConfigChanged(config: GlimtConfig): void {
 async function bootstrap(): Promise<void> {
   // Menu-bar app: no dock icon, no window on launch.
   app.dock?.hide()
+
+  protocol.handle(ICON_SCHEME, (req) => serveIcon(req.url))
 
   const config = loadConfig()
   cache.setDisabled(config.disabledAdapters)
