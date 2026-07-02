@@ -73,3 +73,10 @@ export interface GlimtConfig {
   /** Tool ids the user has hidden. */
   disabledAdapters: ToolId[]
 }
+
+/** Result of persisting config: reports whether the global shortcut registered. */
+export interface SetConfigResult {
+  config: GlimtConfig
+  /** false when another app owns the combo — Settings shows an inline warning. */
+  shortcutRegistered: boolean
+}

@@ -3,6 +3,7 @@ import type {
   AdapterStatus,
   GlimtConfig,
   MergedEntry,
+  SetConfigResult,
 } from '../shared/types'
 
 /**
@@ -30,7 +31,7 @@ const api = {
     ipcRenderer.invoke('resize-popup', height),
 
   getConfig: (): Promise<GlimtConfig> => ipcRenderer.invoke('get-config'),
-  setConfig: (config: GlimtConfig): Promise<GlimtConfig> =>
+  setConfig: (config: GlimtConfig): Promise<SetConfigResult> =>
     ipcRenderer.invoke('set-config', config),
 
   openFdaSettings: (): Promise<void> => ipcRenderer.invoke('open-fda-settings'),

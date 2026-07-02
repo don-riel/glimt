@@ -14,6 +14,9 @@ export function createTray(actions: TrayActions): Tray {
   // Empty image renders as a default template slot; swap for a real icon asset.
   const tray = new Tray(nativeImage.createEmpty())
   tray.setToolTip('Glimt')
+  // Empty icon is a zero-width slot on macOS — invisible/unclickable. A text
+  // title gives the menu-bar item a hit target until a real icon asset lands.
+  tray.setTitle('Glimt')
 
   const menu = Menu.buildFromTemplate([
     { label: 'Show Glimt', click: actions.onShow },

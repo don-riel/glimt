@@ -153,30 +153,75 @@ body {
   text-align: center;
 }
 
-/* Settings */
+/* Settings — dark, matching the popup palette. */
 .settings {
-  padding: 20px;
+  min-height: 100vh;
+  padding: 20px 22px;
   font-size: 14px;
-  color: #222;
+  color: #eee;
+  background: rgba(30, 30, 32, 0.96);
 }
 
 .settings h2 {
-  margin-bottom: 16px;
+  font-size: 18px;
+  margin-bottom: 18px;
 }
 
 .settings h3 {
-  margin: 16px 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #888;
+  margin: 22px 0 10px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
-.field input {
-  padding: 6px 8px;
+.field > span {
+  font-size: 12px;
+  color: #aaa;
+}
+
+/* Shortcut recorder */
+.shortcut-recorder {
+  align-self: flex-start;
+  min-width: 120px;
+  padding: 8px 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 14px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.shortcut-recorder:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.shortcut-recorder.recording {
+  border-color: #4a9eff;
+  box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.3);
+  color: #9cc7ff;
+}
+
+.shortcut-recorder.invalid {
+  border-color: #e0625f;
+}
+
+.shortcut-hint {
+  font-size: 12px;
+  color: #888;
+}
+
+.shortcut-warning {
+  font-size: 12px;
+  color: #f0a35e;
 }
 
 .adapters {
@@ -184,10 +229,26 @@ body {
 }
 
 .adapters li {
-  padding: 4px 0;
+  padding: 6px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.adapters li:first-child {
+  border-top: none;
+}
+
+.adapters label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.adapter-label {
+  color: #eee;
 }
 
 .status {
-  color: #999;
+  color: #888;
   font-size: 12px;
 }
