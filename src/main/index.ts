@@ -29,6 +29,7 @@ function openSettings(): void {
     width: 460,
     height: 520,
     title: 'Glimt Settings',
+    backgroundColor: '#1e1e20',
     webPreferences: {
       preload: path.join(__dirname, '..', 'preload', 'preload.js'),
       contextIsolation: true,
@@ -48,13 +49,21 @@ function openSettings(): void {
   })
 }
 
-function applyShortcut(config: GlimtConfig): void {
-  registerShortcut(config.shortcut, () => popup.toggle())
+function applyShortcut(config: GlimtConfig): boolean {
+  return registerShortcut(config.shortcut, () => popup.toggle())
 }
 
-function onConfigChanged(config: GlimtConfig): void {
-  applyShortcut(config)
-  cache.setDisabled(config.disabledAdapters)
+function onConfigChanged(next: GlimtConfig, prev: GlimtConfig): boolean {
+  cache.setDisabled(next.disabledAdapters)
+  // Adapter-only changes must not churn the global shortcut — re-registering
+  // unbinds/rebinds it and, if the combo is unavailable, spams the tray
+  // notification on unrelated toggles.
+  if (next.shortcut === prev.shortcut) return true
+  const ok = applyShortcut(next)
+  // Registering unbinds the old combo first; if the new one failed, restore the
+  // previous working shortcut so a summon key stays live.
+  if (!ok) applyShortcut(prev)
+  return ok
 }
 
 async function bootstrap(): Promise<void> {

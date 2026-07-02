@@ -6,7 +6,11 @@ import { FDA_SETTINGS_URL } from './fda'
 
 export interface IpcContext {
   cache: RecentsCache
-  onConfigChanged: (config: GlimtConfig) => void
+  /**
+   * Apply the new config. Registers the new shortcut; on failure restores the
+   * previous working one. Returns whether the new shortcut registered.
+   */
+  onConfigChanged: (next: GlimtConfig, prev: GlimtConfig) => boolean
   hidePopup: () => void
   resizePopup: (height: number) => void
 }
@@ -36,9 +40,15 @@ export function registerIpc(ctx: IpcContext): void {
   ipcMain.handle('get-config', () => loadConfig())
 
   ipcMain.handle('set-config', (_e, config: GlimtConfig) => {
-    saveConfig(config)
-    ctx.onConfigChanged(config)
-    return config
+    const prev = loadConfig()
+    const shortcutRegistered = ctx.onConfigChanged(config, prev)
+    // A shortcut that failed to register is never persisted — keep the last
+    // working one so a restart doesn't strand the app without a summon key.
+    const persisted = shortcutRegistered
+      ? config
+      : { ...config, shortcut: prev.shortcut }
+    saveConfig(persisted)
+    return { config: persisted, shortcutRegistered }
   })
 
   ipcMain.handle('open-fda-settings', () => {
